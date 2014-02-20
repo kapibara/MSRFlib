@@ -9,6 +9,8 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
+#include <memory>
 
 #include "Interfaces.h"
 #include "Node.h"
@@ -62,7 +64,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       CheckValid();
 
-      leafNodeIndices.resize(data.Count()); // of leaf node reached per data point
+      leafNodeIndices.resize(data.Count(),-1); // of leaf node reached per data point
 
 
 
@@ -175,14 +177,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             if (!F::isValid(keys[i_left]))
             {
                 if (j_bad>i_left){
-                    key = keys[i_left];
-                    value = values[i_left];
 
-                    keys[i_left] = keys[j_bad];
-                    values[i_left] = values[j_bad];
+                    if(F::isValid(keys[j_bad])&keys[j_bad]<threshold){
+                        key = keys[i_left];
+                        value = values[i_left];
 
-                    keys[j_bad] = key;
-                    values[j_bad] = value;
+                        keys[i_left] = keys[j_bad];
+                        values[i_left] = values[j_bad];
+
+                        keys[j_bad] = key;
+                        values[j_bad] = value;
+                    }
 
                     j_bad--;
                 }else{
@@ -192,14 +197,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             }else{
                 if (keys[i_left] >= threshold & (j_right>i_left)){
 
-                    key = keys[i_left];
-                    value = values[i_left];
+                   if(keys[j_right]<threshold | !F::isValid(keys[j_right]))
+                   {
+                        key = keys[i_left];
+                        value = values[i_left];
 
-                    keys[i_left] = keys[j_right];
-                    values[i_left] = values[j_right];
+                        keys[i_left] = keys[j_right];
+                        values[i_left] = values[j_right];
 
-                    keys[j_right] = key;
-                    values[j_right] = value;
+                        keys[j_right] = key;
+                        values[j_right] = value;
+                    }
 
                     j_right--;
                 }else{
@@ -212,16 +220,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             j_bad++;
 
         if (j_right<j_bad){
-            if(keys[j_right] < threshold )
-                j_right++;
-
+            std::cerr << "j_right<j_bad" << std::endl;
         }else{
             if(!F::isValid(keys[j_right]))
                 j_right++;
 
         }
 
-        return std::make_pair(j_right,j_bad);
+        std::sort(values.begin()+i0, values.begin()+j_bad);//sort left part
+        std::sort(values.begin()+j_right, values.begin()+i1);//sort left part
+
+        return std::make_pair(j_bad,j_right);
     }
 
     static DataPointIndex Partition(std::vector<float>& keys, std::vector<unsigned int>& values, DataPointIndex i0, DataPointIndex i1, float threshold)
@@ -340,11 +349,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       for (int i = i0; i < i1; i++)
         responses_[i] = node.Feature.GetResponse(data, dataIndices[i]);
 
-      int ii = Partition(responses_, dataIndices, i0, i1, node.Threshold);
+      std::pair<DataPointIndex,DataPointIndex> ii  = PartitionNaN(responses_, dataIndices, i0, i1, node.Threshold);
 
       // Recurse for child nodes.
-      ApplyNode(nodeIndex * 2 + 1, data, dataIndices, i0, ii, leafNodeIndices, responses_);
-      ApplyNode(nodeIndex * 2 + 2, data, dataIndices, ii, i1, leafNodeIndices, responses_);
+      ApplyNode(nodeIndex * 2 + 1, data, dataIndices, i0, ii.first, leafNodeIndices, responses_);
+      ApplyNode(nodeIndex * 2 + 2, data, dataIndices, ii.second, i1, leafNodeIndices, responses_);
     }
   };
 

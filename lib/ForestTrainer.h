@@ -5,14 +5,17 @@
 // training data. Please see also ParallelForestTrainer.h.
 
 #include <assert.h>
+#include <fstream>
 
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <ctime>
 
 #include "ProgressStream.h"
 
 #include "TrainingParameters.h"
+#include "classification/depthdb.h"
 
 #include "Interfaces.h"
 #include "Tree.h"
@@ -87,7 +90,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     void TrainNodesRecurse(std::vector<Node<F, S> >& nodes, NodeIndex nodeIndex, DataPointIndex i0, DataPointIndex i1, int recurseDepth)
     {
-      std::cerr << "TrainNodesRecurse()" << std::endl;
+      progress_[Verbose] << "TrainNodesRecurse()" << std::endl;
 
       assert(nodeIndex < nodes.size());
       progress_[Verbose] << Tree<F, S>::GetPrettyPrintPrefix(nodeIndex) << i0 << ":" << i1 << ": ";
@@ -111,12 +114,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       // Iterate over candidate features
       std::vector<float> thresholds;
 
-      std::cerr << "NumberOfCandidateFeatures: " << parameters_.NumberOfCandidateFeatures << std::endl;
-      std::cerr << "i0:" << i0 << "i1" << i1 << std::endl;
-
       for (int f = 0; f < parameters_.NumberOfCandidateFeatures; f++)
       {
-        std::cerr << "checking candidate: " << f <<std::endl;
 
         F feature = trainingContext_.GetRandomFeature(random_);
 
@@ -126,17 +125,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         // Compute feature response per samples at this node
         lastValid_ = 0;
 
+
         for (DataPointIndex i = i0; i < i1; i++){
           responses_[i] = feature.GetResponse(data_, indices_[i]);
             if (F::isValid(responses_[i]))
                 validIndices_[lastValid_++]=i;
         }
 
-        std::cerr << "choosing thr: " <<std::endl;
-
         int nThresholds;
         if ((nThresholds = ChooseCandidateThresholds(random_, &indices_[0], i0, i1, &responses_[0], thresholds)) == 0)
           continue;
+
 
         // Aggregate statistics over sample partitions
         for (DataPointIndex i = 0; i < lastValid_; i++)
@@ -159,8 +158,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             else
               rightChildStatistics_.Aggregate(partitionStatistics_[p]);
           }
-
-          std::cerr << "computing ig: " <<std::endl;
 
           double gain = trainingContext_.ComputeInformationGain(parentStatistics_, leftChildStatistics_, rightChildStatistics_);
 
@@ -206,27 +203,16 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       // Otherwise this is a new decision node, recurse for children.
       nodes[nodeIndex].InitializeSplit(bestFeature, bestThreshold, parentStatistics_);
-      std::cerr << "before partitioning" <<std::endl;
 
       // Now do partition sort - any sample with response greater goes left, otherwise right
       //DataPointIndex ii = Tree<F, S>::Partition(responses_, indices_, i0, i1, bestThreshold);
       std::pair<DataPointIndex,DataPointIndex> ii = Tree<F, S>::PartitionNaN(responses_, indices_, i0, i1, bestThreshold);
 
-      std::cerr << "after partitioning" <<std::endl;
-     // assert(ii >= i0 && i1 >= ii);
-
       progress_[Verbose] << " (threshold = " << bestThreshold << ", gain = "<< maxGain << ")." << std::endl;
 
-
-      if (ii.first>ii.second){
-        /*lllnnnrrr, l-left, n-bad, r - right*/
-        TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii.second, recurseDepth + 1);
-        TrainNodesRecurse(nodes, nodeIndex * 2 + 2, ii.first, i1, recurseDepth + 1);
-      }else{
-        /*lllrrrnnn, l-left, n-bad, r - right*/
-        TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii.first, recurseDepth + 1);
-        TrainNodesRecurse(nodes, nodeIndex * 2 + 2, ii.first, ii.second, recurseDepth + 1);
-      }
+      /*lllnnnrrr, l-left, n-bad, r - right*/
+      TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii.first, recurseDepth + 1);
+      TrainNodesRecurse(nodes, nodeIndex * 2 + 2, ii.second, i1, recurseDepth + 1);
     }
 
   private:
@@ -359,6 +345,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       for (int t = 0; t < parameters.NumberOfTrees; t++)
       {
+
         (*progress)[Interest] << "\rTraining tree "<< t << "...";
 
         std::auto_ptr<Tree<F, S> > tree = TreeTrainer<F, S>::TrainTree(random, context, parameters, data, progress);
