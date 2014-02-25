@@ -20,6 +20,8 @@
 #include "Interfaces.h"
 #include "Tree.h"
 
+//#define USE_ADDITIONAL_MEMORY
+
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
   class Random;
@@ -44,6 +46,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     TrainingParameters parameters_;
 
     std::vector<unsigned int> indices_;
+
+#ifdef USE_ADDITIONAL_MEMORY
+    std::vector<unsigned int> indicestmp_;
+#endif
 
     std::vector<float> responses_;
     std::vector<DataPointIndex> validIndices_;
@@ -72,6 +78,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
       indices_ .resize(data.Count());
+
+#ifdef USE_ADDITIONAL_MEMORY
+      indicestmp_.resize(data.Count()); //allocate an array for fast indices processing
+#endif
+
       for (DataPointIndex i = 0; i < indices_.size(); i++)
         indices_[i] = i;
 
@@ -206,9 +217,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       // Now do partition sort - any sample with response greater goes left, otherwise right
       //DataPointIndex ii = Tree<F, S>::Partition(responses_, indices_, i0, i1, bestThreshold);
+#ifdef USE_ADDITIONAL_MEMORY
+      std::pair<DataPointIndex,DataPointIndex> ii = Tree<F, S>::PartitionNaNfast(responses_, indices_, indicestmp_, i0, i1, bestThreshold);
+#else
       std::pair<DataPointIndex,DataPointIndex> ii = Tree<F, S>::PartitionNaN(responses_, indices_, i0, i1, bestThreshold);
-
+#endif
       progress_[Verbose] << " (threshold = " << bestThreshold << ", gain = "<< maxGain << ")." << std::endl;
+
 
       /*lllnnnrrr, l-left, n-bad, r - right*/
       TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii.first, recurseDepth + 1);

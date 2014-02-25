@@ -159,6 +159,34 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return nodes_[index];
     }
 
+    static std::pair<DataPointIndex,DataPointIndex> PartitionNaNfast(std::vector<float>& keys, std::vector<unsigned int>& values, std::vector<unsigned int>& valuestmp, DataPointIndex i0, DataPointIndex i1, float threshold)
+    {
+        assert(i1 > i0);
+
+        int i_left = (int)(i0);
+        int j_right = (int)(i1 - 1);
+
+        for(int i=i0; i<i1 & (i_left<=j_right);i++)
+        {
+            if(F::isValid(keys[i]) & keys[i]<threshold){
+                valuestmp[i_left] = values[i];
+                i_left++;
+            }
+            if(F::isValid(keys[i]) & keys[i]>=threshold){
+                valuestmp[j_right] = values[i];
+                j_right--;
+            }
+        }
+
+        if(i_left==j_right){
+            std::cout << "no invalid values: " << std::endl;
+        }
+        copy(valuestmp.begin(),valuestmp.begin()+i_left,values.begin());
+        copy(valuestmp.begin()+j_right+1,valuestmp.end(),values.begin()+j_right+1);
+
+        return std::make_pair(i_left,j_right+1);
+    }
+
     static std::pair<DataPointIndex,DataPointIndex> PartitionNaN(std::vector<float>& keys, std::vector<unsigned int>& values, DataPointIndex i0, DataPointIndex i1, float threshold)
     {
         assert(i1 > i0);
@@ -216,14 +244,18 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         if(F::isValid(keys[j_bad]))
             j_bad++;
 
+        if(j_bad == i1){
+            //no bad key values found
+            return std::make_pair(j_right,j_right);
+        }
+
         if (j_right<j_bad){
-            std::cerr << "j_right<j_bad: " << j_right << ";" <<j_bad << std::endl;
-            std::cerr << "indices: " << i0 <<"---" << i1 << std::endl;
+            std::cerr << "j_right<j_bad:" << j_right << ";" << j_bad << std::endl;
+            std::cerr << "i0: " << i0 << " i1: " << i1 << std::endl;
 
         }else{
             if(!F::isValid(keys[j_right]))
                 j_right++;
-
         }
 
         std::sort(values.begin()+i0, values.begin()+j_bad);//sort left part
