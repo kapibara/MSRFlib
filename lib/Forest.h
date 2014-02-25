@@ -180,7 +180,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       for (int t = 0; t < TreeCount(); t++)
       {
         //initialize with -1 to indicate, that a pixel did not reach a leaf
-        leafNodeIndices[t].resize(data.Count());
+        leafNodeIndices[t].resize(data.Count(),-1);
 
         (*progress)[Interest] << "\rApplying tree " << t << "...";
         trees_[t]->Apply(data, leafNodeIndices[t]);

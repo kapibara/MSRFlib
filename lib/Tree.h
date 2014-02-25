@@ -65,9 +65,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       CheckValid();
 
       leafNodeIndices.resize(data.Count(),-1); // of leaf node reached per data point
-
-
-
       // Allocate temporary storage for data point indices and response values
 
       std::vector<unsigned int> dataIndices_(data.Count());
@@ -220,7 +217,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             j_bad++;
 
         if (j_right<j_bad){
-            std::cerr << "j_right<j_bad" << std::endl;
+            std::cerr << "j_right<j_bad: " << j_right << ";" <<j_bad << std::endl;
+            std::cerr << "indices: " << i0 <<"---" << i1 << std::endl;
+
         }else{
             if(!F::isValid(keys[j_right]))
                 j_right++;
