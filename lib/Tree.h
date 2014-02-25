@@ -247,12 +247,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         if(F::isValid(keys[j_bad]))
             j_bad++;
 
+        if(j_bad == i1){
+            //no bad key values found
+            return std::make_pair(j_right,j_right);
+        }
+
         if (j_right<j_bad){
-            std::cerr << "j_right<j_bad" << std::endl;
+            std::cerr << "j_right<j_bad:" << j_right << ";" << j_bad << std::endl;
+            std::cerr << "i0: " << i0 << " i1: " << i1 << std::endl;
         }else{
             if(!F::isValid(keys[j_right]))
                 j_right++;
-
         }
 
         std::sort(values.begin()+i0, values.begin()+j_bad);//sort left part

@@ -20,7 +20,7 @@
 #include "Interfaces.h"
 #include "Tree.h"
 
-#define USE_ADDITIONAL_MEMORY
+//#define USE_ADDITIONAL_MEMORY
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
