@@ -377,8 +377,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       if (i0 == i1)   // No samples left
         return;
 
-      for (int i = i0; i < i1; i++)
+      for (int i = i0; i < i1; i++){
         responses_[i] = node.Feature.GetResponse(data, dataIndices[i]);
+      }
 
       std::pair<DataPointIndex,DataPointIndex> ii  = PartitionNaN(responses_, dataIndices, i0, i1, node.Threshold);
 

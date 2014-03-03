@@ -15,12 +15,16 @@
 #include "ProgressStream.h"
 
 #include "TrainingParameters.h"
-#include "classification/depthdb.h"
+//#include "classification/depthdb.h"
 
 #include "Interfaces.h"
 #include "Tree.h"
+#include "localcache.h"
 
-//#define USE_ADDITIONAL_MEMORY
+#include "serialization.h"
+#include "string2number.hpp"
+
+#define USE_ADDITIONAL_MEMORY
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -196,14 +200,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       leftChildStatistics_.Clear();
       rightChildStatistics_.Clear();
 
-      for (DataPointIndex i = 0; i < lastValid_; i++)
+      for (DataPointIndex i = i0; i < i1; i++)
       {
-        responses_[i] = bestFeature.GetResponse(data_, indices_[validIndices_[i]]);
+        responses_[i] = bestFeature.GetResponse(data_, indices_[i]);
         if (responses_[i] < bestThreshold)
-          leftChildStatistics_.Aggregate(data_, indices_[validIndices_[i]]);
+          leftChildStatistics_.Aggregate(data_, indices_[i]);
         else
-          rightChildStatistics_.Aggregate(data_, indices_[validIndices_[i]]);
+          rightChildStatistics_.Aggregate(data_, indices_[i]);
       }
+
+      //serialize responce stats for analysis
+      //serializeVector("nodeStats"+num2str<int>(nodeIndex),responses_,i0,i1);
 
       if (trainingContext_.ShouldTerminate(parentStatistics_, leftChildStatistics_, rightChildStatistics_, maxGain))
       {
@@ -224,6 +231,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 #endif
       progress_[Verbose] << " (threshold = " << bestThreshold << ", gain = "<< maxGain << ")." << std::endl;
 
+      if(ii.first != ii.second){
+          progress_[Verbose] << "ERROR: ii.first != ii.second" << std::endl;
+      }
 
       /*lllnnnrrr, l-left, n-bad, r - right*/
       TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii.first, recurseDepth + 1);
