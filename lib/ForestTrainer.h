@@ -189,9 +189,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       if (maxGain == 0.0)
       {
-        nodes[nodeIndex].InitializeLeaf(parentStatistics_);
-        progress_[Verbose] << "Terminating with zero gain." << std::endl;
-        return;
+            nodes[nodeIndex].InitializeLeaf(parentStatistics_);
+            progress_[Verbose] << "Terminating with zero gain." << std::endl;
+            return;
       }
 
       // Now reorder the data point indices using the winning feature and thresholds.
@@ -214,11 +214,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       if (trainingContext_.ShouldTerminate(parentStatistics_, leftChildStatistics_, rightChildStatistics_, maxGain))
       {
-        nodes[nodeIndex].InitializeLeaf(parentStatistics_);
-        progress_[Verbose] << "Terminating with no split." << std::endl;
-        return;
+            nodes[nodeIndex].InitializeLeaf(parentStatistics_);
+            progress_[Verbose] << "Terminating with no split." << std::endl;
+            return;
       }
 
+      // Compress statistics, otherwise it is too much
+      parentStatistics_.Compress();
       // Otherwise this is a new decision node, recurse for children.
       nodes[nodeIndex].InitializeSplit(bestFeature, bestThreshold, parentStatistics_);
 
