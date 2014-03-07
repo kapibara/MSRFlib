@@ -105,15 +105,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     void TrainNodesRecurse(std::vector<Node<F, S> >& nodes, NodeIndex nodeIndex, DataPointIndex i0, DataPointIndex i1, int recurseDepth)
     {
-      progress_[Verbose] << "TrainNodesRecurse()" << std::endl;
+      progress_[Verbose] << "TrainNodesRecurse(): nodeIndex " << nodeIndex <<":" << nodes.size() << std::endl;
 
       assert(nodeIndex < nodes.size());
-      progress_[Verbose] << Tree<F, S>::GetPrettyPrintPrefix(nodeIndex) << i0 << ":" << i1 << ": ";
+      progress_[Verbose] << Tree<F,S>::GetPrettyPrintPrefix(nodeIndex) << i0 << ":" << i1 << ": ";
 
       // First aggregate statistics over the samples at the parent node
       parentStatistics_.Clear();
       for (DataPointIndex i = i0; i < i1; i++)
         parentStatistics_.Aggregate(data_, indices_[i]);
+
+      progress_[Verbose] << "parent statistics aggregated" << std::endl;
 
       if (nodeIndex >= nodes.size() / 2) // this is a leaf node, nothing else to do
       {
@@ -200,6 +202,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       leftChildStatistics_.Clear();
       rightChildStatistics_.Clear();
 
+      progress_[Verbose] << "computing best feature statistics" << std::endl;
+
       for (DataPointIndex i = i0; i < i1; i++)
       {
         responses_[i] = bestFeature.GetResponse(data_, indices_[i]);
@@ -209,7 +213,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
           rightChildStatistics_.Aggregate(data_, indices_[i]);
       }
 
-      //serialize responce stats for analysis
+      //serialize responce stats for analyscd ..is
       //serializeVector("nodeStats"+num2str<int>(nodeIndex),responses_,i0,i1);
 
       if (trainingContext_.ShouldTerminate(parentStatistics_, leftChildStatistics_, rightChildStatistics_, maxGain))
@@ -232,6 +236,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::pair<DataPointIndex,DataPointIndex> ii = Tree<F, S>::PartitionNaN(responses_, indices_, i0, i1, bestThreshold);
 #endif
       progress_[Verbose] << " (threshold = " << bestThreshold << ", gain = "<< maxGain << ")." << std::endl;
+      progress_[Verbose] << " separation: " << i0 << ":" << ii.first << ":" << ii.second << ":" << i1 << std::endl;
 
       if(ii.first != ii.second){
           progress_[Verbose] << "ERROR: ii.first != ii.second" << std::endl;

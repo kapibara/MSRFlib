@@ -117,7 +117,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="leftChild">Statistics aggregated over the left hand partition.</param>
     /// <param name="rightChild">Statistics aggregated over the right hand partition.</param>
     /// <returns>A measure of gain, e.g. entropy gain in bits.</returns>
-    virtual double ComputeInformationGain(const S& parent, const S& leftChild, const S& rightChild) = 0;
+    virtual double ComputeInformationGain(S& parent, S& leftChild, S& rightChild) = 0;
 
     /// <summary>
     /// Called by the training framework to determine whether training
