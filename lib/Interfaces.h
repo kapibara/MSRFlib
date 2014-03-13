@@ -70,7 +70,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <param name="data">The data point collection.</param>
     /// <param name="dataIndex">The index of the data point.</param>
-    virtual void Aggregate(const IDataPointCollection& data, unsigned int index)=0;
+    virtual void Aggregate(IDataPointCollection& data, unsigned int index)=0;
 
     /// <summary>
     /// Combine two sets of statistics.
@@ -83,6 +83,18 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <returns></returns>
     virtual S DeepClone() const=0;
+
+    /// <summary>
+    /// Compress the statistics for the internal nodes
+    /// </summary>
+    /// <returns></returns>
+    virtual void Compress() = 0;
+
+    /// <summary>
+    /// Compute full statistics (if set false, do some limited computations)
+    /// </summary>
+    /// <returns></returns>
+    virtual void FullStats(bool compute) = 0;
   };
 
   /// <summary>

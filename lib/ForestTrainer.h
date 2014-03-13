@@ -96,11 +96,15 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       parentStatistics_ = trainingContext_.GetStatisticsAggregator();
 
       leftChildStatistics_ = trainingContext_.GetStatisticsAggregator();
+      leftChildStatistics_.FullStats(false);
       rightChildStatistics_ = trainingContext_.GetStatisticsAggregator();
+      rightChildStatistics_.FullStats(false);
 
       partitionStatistics_.resize(parameters.NumberOfCandidateThresholdsPerFeature + 1);
-      for (unsigned int i = 0; i < parameters.NumberOfCandidateThresholdsPerFeature + 1; i++)
+      for (unsigned int i = 0; i < parameters.NumberOfCandidateThresholdsPerFeature + 1; i++){
         partitionStatistics_[i] = trainingContext_.GetStatisticsAggregator();
+        partitionStatistics_[i].FullStats(false);
+      }
     }
 
     void TrainNodesRecurse(std::vector<Node<F, S> >& nodes, NodeIndex nodeIndex, DataPointIndex i0, DataPointIndex i1, int recurseDepth)
