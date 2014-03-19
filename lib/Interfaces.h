@@ -145,5 +145,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// within a previous call to ISampleCollection.ComputeGain().</param>
     /// <returns>True if training should be terminated, false otherwise.</returns>
     virtual bool ShouldTerminate(const S& parent, const S& leftChild, const S& rightChild, double gain) = 0;
+
+    /// <summary>
+    /// Tells the context which node is being trained now
+    /// </summary>
+    virtual void setCurrentNode(int nodeIndex) = 0;
+
   };
 } } }

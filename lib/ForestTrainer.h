@@ -121,12 +121,15 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       progress_[Verbose] << "parent statistics aggregated" << std::endl;
 
+
       if (nodeIndex >= nodes.size() / 2) // this is a leaf node, nothing else to do
       {
         nodes[nodeIndex].InitializeLeaf(parentStatistics_);
         progress_[Verbose] << "Terminating at max depth." << std::endl;
         return;
       }
+
+      trainingContext_.setCurrentNode(nodeIndex);
 
       double maxGain = 0.0;
       F bestFeature;
@@ -137,7 +140,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       for (int f = 0; f < parameters_.NumberOfCandidateFeatures; f++)
       {
-
         F feature = trainingContext_.GetRandomFeature(random_);
 
         for (unsigned int b = 0; b < parameters_.NumberOfCandidateThresholdsPerFeature + 1; b++)
@@ -245,6 +247,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       if(ii.first != ii.second){
           progress_[Verbose] << "ERROR: ii.first != ii.second" << std::endl;
       }
+
+
 
       /*lllnnnrrr, l-left, n-bad, r - right*/
       TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii.first, recurseDepth + 1);
