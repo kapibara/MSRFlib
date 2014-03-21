@@ -184,8 +184,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
           double gain = trainingContext_.ComputeInformationGain(parentStatistics_, leftChildStatistics_, rightChildStatistics_);
 
+          trainingContext_.collectStats(feature,thresholds[t],gain);
 
-          if (gain >= maxGain)
+          if (gain > maxGain)
           {
             maxGain = gain;
             bestFeature = feature;

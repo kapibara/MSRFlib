@@ -97,6 +97,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     virtual void FullStats(bool compute) = 0;
   };
 
+
   /// <summary>
   /// An abstract representation of a decision forest training problem that
   /// intended to be implemented within client code. Instances of this
@@ -150,6 +151,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// Tells the context which node is being trained now
     /// </summary>
     virtual void setCurrentNode(int nodeIndex) = 0;
+
+    virtual void collectStats(const F &feature, float threashold, double gain);
 
   };
 } } }
