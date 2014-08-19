@@ -152,7 +152,15 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     virtual void setCurrentNode(int nodeIndex) = 0;
 
-    virtual void collectStats(const F &feature, float threashold, double gain);
+    /// <summary>
+    /// Tells the context which node is being trained now
+    /// </summary>
+    virtual void setCurrentTree(int treeIndex) = 0;
+
+    /// <summaru>
+    /// Collect all kind of statistics during training
+    /// </summary
+    virtual void collectStats(const F &feature, float threashold, double gain) = 0;
 
   };
 } } }

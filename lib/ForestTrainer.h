@@ -150,15 +150,18 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
         for (DataPointIndex i = i0; i < i1; i++){
+
           responses_[i] = feature.GetResponse(data_, indices_[i]);
+
             if (F::isValid(responses_[i]))
                 validIndices_[lastValid_++]=i;
         }
 
         int nThresholds;
-        if ((nThresholds = ChooseCandidateThresholds(random_, &indices_[0], i0, i1, &responses_[0], thresholds)) == 0)
-          continue;
+        if ((nThresholds = ChooseCandidateThresholds(random_, &indices_[0], i0, i1, &responses_[0], thresholds)) == 0){
 
+            continue;
+        }
 
         // Aggregate statistics over sample partitions
         for (DataPointIndex i = 0; i < lastValid_; i++)
@@ -196,10 +199,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       }
 
-      if (maxGain == 0.0)
+
+
+      if (maxGain <= 0.0)
       {
             nodes[nodeIndex].InitializeLeaf(parentStatistics_);
-            progress_[Verbose] << "Terminating with zero gain." << std::endl;
+            progress_[Verbose] << "Terminating with non-positive gain." << std::endl;
             return;
       }
 
@@ -208,8 +213,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       // to terminate training of this branch.
       leftChildStatistics_.Clear();
       rightChildStatistics_.Clear();
-
-      progress_[Verbose] << "computing best feature statistics" << std::endl;
 
       for (DataPointIndex i = i0; i < i1; i++)
       {
@@ -389,9 +392,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         (*progress)[Interest] << "\rTraining tree "<< t << "...";
 
-        std::auto_ptr<Tree<F, S> > tree = TreeTrainer<F, S>::TrainTree(random, context, parameters, data, progress);
+         context.setCurrentTree(t);
 
-        forest->AddTree(tree);
+         std::auto_ptr<Tree<F, S> > tree = TreeTrainer<F, S>::TrainTree(random, context, parameters, data, progress);
+
+         forest->AddTree(tree);
 
       }
       (*progress)[Interest] << "\rTrained " << parameters.NumberOfTrees << " trees.         " << std::endl;

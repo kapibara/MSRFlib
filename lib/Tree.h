@@ -55,6 +55,15 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     std::vector<Node<F,S> > & GetNodes() { return nodes_;}
 
   public:
+
+    /// <summary>
+    /// Return the number of decision levels for that tree
+    /// </summary>
+    /// <returns>The number of decision levels for that tree</returns>
+    int DecisionLevels() const{
+        return decisionLevels_;
+    }
+
     /// <summary>
     /// Apply the decision tree to a collection of test data points.
     /// </summary>
